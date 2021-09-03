@@ -30,4 +30,36 @@ router.get("/:id", async function (req, res) {
   }
 });
 
+router.patch("/:id", async function (req, res) {
+  const updates = Object.keys(req.body);
+  const allowUpdate = ["description", "completed"];
+  const isValidate = updates.every((update) => allowUpdate.includes(update));
+
+  if (!isValidate) {
+    return res.status(404).send({ error: "Invlaid update for task" });
+  }
+  try {
+    const task = await Task.findByIdAndUpdate(req.params.id);
+    updates.forEach((update) => (task[update] = req.body[update]));
+    // const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
+    //   new: true,
+    // });
+    return res.status(200).send(task);
+  } catch (err) {
+    return res.status(400).send(err.message);
+  }
+});
+
+router.delete("/:id", async function (req, res) {
+  try {
+    const task = await Task.findByIdAndDelete(req.params.id);
+    if (!task) {
+      return res.status(404).send({ error: "task does not exit" });
+    }
+    return res.status(200).send(task);
+  } catch (err) {
+    return res.status(400).send(err);
+  }
+});
+
 module.exports = router;
